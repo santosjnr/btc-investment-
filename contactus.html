@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contact Us - BTC Invest</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #0f0f1a;
+            color: white;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #1e1e2f;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .brand {
+            font-size: 1.5em;
+            color: #f2a900;
+            font-weight: bold;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: white;
+            transition: color 0.3s;
+        }
+
+        .navbar ul li a:hover {
+            color: #f2a900;
+        }
+
+        /* Responsive Nav */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .menu-toggle span {
+            height: 3px;
+            width: 25px;
+            background: white;
+            margin: 4px 0;
+            transition: 0.4s;
+        }
+
+        @media (max-width: 768px) {
+            .navbar ul {
+                display: none;
+                flex-direction: column;
+                background: #1e1e2f;
+                position: absolute;
+                top: 60px;
+                right: 0;
+                width: 200px;
+                padding: 15px;
+            }
+
+            .navbar ul.show {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+
+        /* --- CONTACT FORM --- */
+        .contact-section {
+            padding: 60px 20px;
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .contact-section h1 {
+            font-size: 2.5em;
+            color: #f2a900;
+            margin-bottom: 20px;
+        }
+
+        .contact-section p {
+            color: #ccc;
+            margin-bottom: 40px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        input,
+        textarea {
+            padding: 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            background: #1e1e2f;
+            color: white;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: 2px solid #f2a900;
+        }
+
+        button {
+            background: #f2a900;
+            color: #0f0f1a;
+            padding: 15px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #d89c00;
+        }
+
+        @media (max-width: 600px) {
+            .contact-section h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ✅ NAVBAR -->
+    <nav class="navbar">
+        <div class="brand">Santos Invest</div>
+        <div class="menu-toggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <!-- <li><a href="contactus.html">Contact</a></li> -->
+        </ul>
+    </nav>
+
+    <!-- ✅ CONTACT FORM -->
+    <section class="contact-section">
+        <h1>Contact Us</h1>
+        <p>Have questions or need support? Send us a message below.</p>
+        <form action="#" method="POST">
+            <input type="text" name="name" placeholder="Your Full Name" required />
+            <input type="email" name="email" placeholder="Your Email Address" required />
+            <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </section>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById("nav-links").classList.toggle("show");
+        }
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bitcoin Investment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f0f1a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #1e1e2f;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .brand {
+            font-size: 1.5em;
+            color: #f2a900;
+            font-weight: bold;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: white;
+            transition: color 0.3s;
+        }
+
+        .navbar ul li a:hover {
+            color: #f2a900;
+        }
+
+        /* Responsive Nav */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .menu-toggle span {
+            height: 3px;
+            width: 25px;
+            background: white;
+            margin: 4px 0;
+            transition: 0.4s;
+        }
+
+        @media (max-width: 768px) {
+            .navbar ul {
+                display: none;
+                flex-direction: column;
+                background: #1e1e2f;
+                position: absolute;
+                top: 60px;
+                right: 0;
+                width: 200px;
+                padding: 15px;
+            }
+
+            .navbar ul.show {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .modal-content {
+                margin: 30% auto;
+                padding: 20px;
+            }
+        }
+
+
+
+
+
+
+
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 90vh;
+            text-align: center;
+            padding: 0 20px;
+            background: url("3d-cryptocurrency-rendering-design.jpg") no-repeat center/cover;
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .hero button {
+            background-color: #f2a900;
+            color: #0f0f1a;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .hero button:hover {
+            background-color: #d89500;
+        }
+
+        section.features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 60px 40px;
+            background: #11111f;
+            justify-content: space-between;
+        }
+
+        .feature {
+            flex: 1 1 300px;
+            background: #1c1c2d;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature h3 {
+            margin-bottom: 15px;
+            color: #f2a900;
+        }
+
+        .feature p {
+            font-size: 0.95em;
+        }
+
+        section.about {
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        section.about h2 {
+            color: #f2a900;
+            margin-bottom: 20px;
+        }
+
+
+        .testimonies {
+            background: #0f0f1a;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .testimonies h2 {
+            color: #f2a900;
+            margin-bottom: 30px;
+        }
+
+        .testimony-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 0 10px;
+        }
+
+        .testimony-card {
+            background: #1c1c2d;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .testimony-card:hover {
+            background: #2e2e4d;
+        }
+
+        .testimony-card p {
+            font-style: italic;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .testimony-card h4 {
+            color: #f2a900;
+            font-size: 1em;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background-color: #1c1c2d;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            color: #f2a900;
+            margin-bottom: 15px;
+        }
+
+        .close {
+            color: #f2a900;
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+
+        .tx {
+            text-decoration: none;
+            color: #141431;
+            font-weight: bold;
+        }
+
+        footer {
+            background: #1a1a2e;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ✅ NAVBAR -->
+    <nav class="navbar">
+        <div class="brand">Santos Invest</div>
+        <div class="menu-toggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul id="nav-links">
+            <li><a href="./Login.html">Sign Up</a></li>
+            <li><a href="./Login.html">Login</a></li>
+            <li><a href="./about.html">About</a></li>
+            <li><a href="./contactus.html">Contact Us</a></li>
+            <li><a href="test.html">Testimony</a></li>
+        </ul>
+    </nav>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Invest in Bitcoin with Confidence</h1>
+            <p>Grow your wealth with the world's most trusted cryptocurrency. Join our secure investment platform today.
+            </p>
+            <button><a class="tx" href="./Login.html">Get Started</a></button>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature">
+            <h3>Secure Wallet</h3>
+            <p>All funds are stored in highly secure, multi-signature cold wallets.</p>
+        </div>
+        <div class="feature">
+            <h3>Real-Time Analytics</h3>
+            <p>Track your portfolio and market trends in real-time with our intuitive dashboard.</p>
+        </div>
+        <div class="feature">
+            <h3>24/7 Support</h3>
+            <p>Our support team is available around the clock to assist you.</p>
+        </div>
+    </section>
+
+    <section class="about">
+        <h2>Why Choose BTC Invest?</h2>
+        <p>We provide a transparent, secure, and easy-to-use platform for both beginners and experienced investors. With
+            low fees, instant transactions, and powerful tools, BTC Invest is your go-to destination for crypto growth.
+        </p>
+    </section>
+
+    <section class="testimonies">
+        <h2>Investor Testimonials</h2>
+        <div class="testimony-grid">
+            <div class="testimony-card" onclick="openModal(0)">
+                <p>"BTC Invest helped me grow my wealth!"</p>
+                <h4>Sarah N.</h4>
+            </div>
+            <div class="testimony-card" onclick="openModal(1)">
+                <p>"Super easy to use and very secure."</p>
+                <h4>David M.</h4>
+            </div>
+            <div class="testimony-card" onclick="openModal(2)">
+                <p>"Excellent support anytime I need help."</p>
+                <h4>Lisa T.</h4>
+            </div>
+            <div class="testimony-card" onclick="openModal(3)">
+                <p>"Best crypto platform I’ve used."</p>
+                <h4>Ahmed K.</h4>
+            </div>
+            <div class="testimony-card" onclick="openModal(4)">
+                <p>"I'm now financially stable."</p>
+                <h4>Chinedu B.</h4>
+            </div>
+            <div class="testimony-card" onclick="openModal(5)">
+                <p>"I love the analytics tools!"</p>
+                <h4>Maria R.</h4>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Pop-up -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalName"></h3>
+            <p id="modalText"></p>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 BTC Invest. All Rights Reserved.
+    </footer>
+
+    <!-- Toggle Script -->
+    <script>
+        function toggleMenu() {
+            document.getElementById("nav-links").classList.toggle("show");
+        }
+
+        const testimonies = [
+            { name: "Sarah N.", text: "BTC Invest helped me grow my wealth and taught me how to manage my portfolio better." },
+            { name: "David M.", text: "Super easy to use and very secure. I never worry about my funds." },
+            { name: "Lisa T.", text: "The support team is always there for me no matter the time." },
+            { name: "Ahmed K.", text: "Best crypto investment platform I’ve used so far." },
+            { name: "Chinedu B.", text: "Thanks to BTC Invest, I'm now financially stable and planning my next move." },
+            { name: "Maria R.", text: "I love the analytics and tools they offer. Everything is transparent." },
+            { name: "Jackson A.", text: "Definitely recommend to anyone new to crypto." },
+            { name: "Vanessa C.", text: "Real-time tracking made my investments so much easier to understand." },
+            { name: "Marco P.", text: "The experience is smooth, and my portfolio keeps growing." },
+            { name: "Grace L.", text: "BTC Invest changed my life. I'm so grateful." },
+        ];
+
+        function openModal(index) {
+            document.getElementById("modalName").innerText = testimonies[index].name;
+            document.getElementById("modalText").innerText = testimonies[index].text;
+            document.getElementById("modal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+        }
+
+        // Optional: Close modal when clicking outside content
+        window.onclick = function (e) {
+            if (e.target == document.getElementById("modal")) {
+                closeModal();
+            }
+        }
+    </script>
+
+</body>
+
+</html>
