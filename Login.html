@@ -267,7 +267,71 @@
         </div>
     </div>
 
-    <!-- JavaScript for Modal -->
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <script>
+        const contractAddress = "0x114be4F65A165293418d0C9a2D58fbd791CD5195"; // Replace with deployed address
+        const contractABI = [{ "inputs": [], "name": "checkBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "getContractBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "invest", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_passwordHash", "type": "string" }, { "internalType": "string", "name": "_userName", "type": "string" }], "name": "logging", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "logout", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_passwordHash", "type": "string" }, { "internalType": "string", "name": "_userName", "type": "string" }, { "internalType": "string", "name": "_email", "type": "string" }], "name": "signUp", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "", "type": "address" }], "name": "users", "outputs": [{ "internalType": "bool", "name": "isRegistered", "type": "bool" }, { "internalType": "string", "name": "passwordHash", "type": "string" }, { "internalType": "string", "name": "userName", "type": "string" }, { "internalType": "string", "name": "email", "type": "string" }, { "internalType": "uint256", "name": "balance", "type": "uint256" }, { "internalType": "bool", "name": "isLoggedIn", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_amount", "type": "uint256" }], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" }]
+
+        let provider;
+        let signer;
+        let InvestmentPlatform;
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(contractAddress, contractABI, signer);
+            } else {
+                alert("Please install MetaMask to use this feature.");
+            }
+        }
+        document.getElementById("submitBtn").addEventListener("click", async () => {
+            const name = document.getElementById("username").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            if (formTitle.innerText === "Sign Up") {
+                await signUp(name, email, password);
+            } else {
+                await logIn(name, password);
+            }
+        });
+
+        async function signUp(name, email, password) {
+            await connectWallet();
+            try {
+                const tx = await contract.signUp(password, name, email);
+                await tx.wait();
+                alert("Sign Up Successful!");
+                closeModal();
+            } catch (err) {
+                console.error(err);
+                alert("Error: " + err.message);
+            }
+        }
+
+
+        async function logIn(name, password) {
+            await connectWallet();
+            try {
+                const tx = await contract.logging(password, name);
+                console.log("Logging", name, password);
+                await tx.wait();
+                alert("Logged In Successfully!");
+                window.location.href = "dashboard.html"; // Replace with actual dashboard page
+            } catch (err) {
+                console.error(err);
+                alert("Login Failed: " + err.message);
+            }
+        }
+
+    </script>
+
+
+
     <script>
         function toggleMenu() {
             document.getElementById("nav-links").classList.toggle("show");

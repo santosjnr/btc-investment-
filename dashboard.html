@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Santos Invest</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background-color: #0f0f1a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #f2a900;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #1e1e2f;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+            text-align: left;
+        }
+
+        .info-box p {
+            margin: 10px 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .actions input,
+        .actions button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .actions input {
+            flex: 1;
+        }
+
+        .actions button {
+            background: #f2a900;
+            color: #0f0f1a;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .actions button:hover {
+            background: #d89500;
+        }
+
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #d32f2f;
+        }
+
+        @media (max-width: 600px) {
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button id="logoutBtn" class="logout-button">Logout</button>
+
+    <h1>Welcome to Your Dashboard</h1>
+
+    <div class="info-box">
+        <p><strong>Wallet Address:</strong> <span id="userAddress">Loading...</span></p>
+        <p><strong>Username:</strong> <span id="userName">Loading...</span></p>
+        <p><strong>Balance:</strong> <span id="userBalance">Loading...</span> ETH</p>
+        <h1>Ethereum Price (USD)</h1>
+        <p id="ethPrice">$ -- .--</p>
+    </div>
+
+    <div class="info-box">
+        <p><strong>Profit (last 10 min):</strong> <span id="profitAmount">Calculating...</span> ETH</p>
+    </div>
+
+    <div class="actions">
+        <input type="number" id="investAmount" placeholder="Enter ETH to invest" />
+        <button onclick="invest()">Invest</button>
+    </div>
+
+    <br />
+
+    <div class="actions">
+        <input type="number" id="withdrawAmount" placeholder="Enter ETH to withdraw" />
+        <button onclick="withdraw()">Withdraw</button>
+    </div>
+
+    <div class="info-box" style="margin-top: 30px;">
+        <h3>Investment History</h3>
+        <p>Total Invested: <strong id="totalInvested">0</strong> ETH</p>
+        <table style="width:100%; color: #fff;" id="investmentTable">
+            <thead>
+                <tr>
+                    <th style="text-align:left;">Amount (ETH)</th>
+                    <th style="text-align:left;">Date/Time</th>
+                    <th style="text-align:left;">Tx Hash</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="info-box" style="margin-top: 30px;">
+        <h3>Withdrawal History</h3>
+        <p>Total Withdrawn: <strong id="totalWithdrawn">0</strong> ETH</p>
+        <table style="width:100%; color: #fff;" id="withdrawalTable">
+            <thead>
+                <tr>
+                    <th style="text-align:left;">Amount (ETH)</th>
+                    <th style="text-align:left;">Date/Time</th>
+                    <th style="text-align:left;">Tx Hash</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+
+    <div class="info-box" id="adminBox" style="display:none">
+        <p><strong>Total Contract Balance:</strong> <span id="contractBalance">Loading...</span> ETH</p>
+    </div>
+
+    <canvas id="investmentChart" width="400" height="200" style="margin-top: 30px;"></canvas>
+
+    <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script>
+        const contractAddress = "0xaB4c09180363440C79eb44C7210F0aed4825c3Be";
+        const contractABI = [
+            { "inputs": [], "name": "checkBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
+            { "inputs": [], "name": "invest", "outputs": [], "stateMutability": "payable", "type": "function" },
+            { "inputs": [{ "internalType": "uint256", "name": "_amount", "type": "uint256" }], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+            {
+                "inputs": [{ "internalType": "address", "name": "", "type": "address" }], "name": "users", "outputs": [
+                    { "internalType": "bool", "name": "isRegistered", "type": "bool" },
+                    { "internalType": "string", "name": "passwordHash", "type": "string" },
+                    { "internalType": "string", "name": "userName", "type": "string" },
+                    { "internalType": "string", "name": "email", "type": "string" },
+                    { "internalType": "uint256", "name": "balance", "type": "uint256" },
+                    { "internalType": "bool", "name": "isLoggedIn", "type": "bool" }
+                ], "stateMutability": "view", "type": "function"
+            },
+            {
+                "inputs": [], "name": "getContractBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function"
+            }
+        ];
+
+        let provider, signer, contract, userAddress, investmentChart;
+        let profitHistory = [];
+
+        async function init() {
+            if (!window.ethereum) return alert("Please install MetaMask");
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            signer = provider.getSigner();
+            userAddress = await signer.getAddress();
+
+            document.getElementById("userAddress").innerText = userAddress;
+            contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+            const user = await contract.users(userAddress);
+            document.getElementById("userName").innerText = user.userName;
+
+            if (user.userName === "admin") {
+                document.getElementById("adminBox").style.display = "block";
+                const contractBal = await contract.getContractBalance();
+                document.getElementById("contractBalance").innerText = ethers.utils.formatEther(contractBal);
+            }
+
+            const balance = await contract.checkBalance();
+            const formatted = parseFloat(ethers.utils.formatEther(balance));
+            document.getElementById("userBalance").innerText = formatted;
+            updateChart(formatted);
+            trackProfit(formatted);
+        }
+
+        async function invest() {
+            const ethValue = document.getElementById("investAmount").value;
+            if (!ethValue || isNaN(ethValue) || ethValue <= 0) return showToast("Enter a valid ETH amount");
+            try {
+                const tx = await contract.invest({ value: ethers.utils.parseEther(ethValue) });
+                await tx.wait();
+                saveInvestmentHistory(ethValue, tx.hash);
+                showToast("Investment successful!", "#28a745");
+                await autoRefreshBalance();
+            } catch (err) {
+                console.error(err);
+                showToast("Investment failed: " + err.message, "#c0392b");
+            }
+        }
+
+        async function withdraw() {
+            const amount = document.getElementById("withdrawAmount").value;
+            if (!amount || isNaN(amount) || amount <= 0) return showToast("Enter a valid ETH amount");
+            try {
+                const tx = await contract.withdraw(ethers.utils.parseEther(amount));
+                await tx.wait();
+                saveWithdrawalHistory(amount, tx.hash);
+                showToast("Withdrawal successful!", "#28a745");
+                await autoRefreshBalance();
+            } catch (err) {
+                console.error(err);
+                showToast("Withdrawal failed: " + err.message, "#c0392b");
+            }
+        }
+
+        async function autoRefreshBalance() {
+            try {
+                const balance = await contract.checkBalance();
+                const formatted = parseFloat(ethers.utils.formatEther(balance));
+                document.getElementById("userBalance").innerText = formatted;
+                updateChart(formatted);
+                trackProfit(formatted);
+            } catch (err) {
+                console.error("Auto-refresh failed:", err);
+            }
+        }
+
+        function trackProfit(currentBalance) {
+            const now = Date.now();
+            // Keep history for 10 minutes max
+            profitHistory = profitHistory.filter(entry => now - entry.time <= 10 * 60 * 1000);
+            profitHistory.push({ time: now, balance: currentBalance });
+
+            if (profitHistory.length > 1) {
+                const first = profitHistory[0].balance;
+                const profit = currentBalance - first;
+                document.getElementById("profitAmount").innerText = profit.toFixed(6);
+            } else {
+                document.getElementById("profitAmount").innerText = "0.000000";
+            }
+        }
+
+        function showToast(message, color = "#333") {
+            const toast = document.createElement("div");
+            toast.style.cssText = `
+                background: ${color}; color: #fff; padding: 10px 15px;
+                margin-top: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.getElementById("toastContainer").appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById("investmentChart").getContext("2d");
+            investmentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Balance (ETH)',
+                        data: [],
+                        borderColor: '#f2a900',
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function updateChart(balance) {
+            const time = new Date().toLocaleTimeString();
+            if (investmentChart.data.labels.length >= 10) {
+                investmentChart.data.labels.shift();
+                investmentChart.data.datasets[0].data.shift();
+            }
+            investmentChart.data.labels.push(time);
+            investmentChart.data.datasets[0].data.push(balance);
+            investmentChart.update();
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", function () {
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = "index.html";
+            }
+        });
+
+
+        // Refresh every 10 sec
+
+        // function saveInvestmentHistory(amount, txHash) {
+        //     const history = JSON.parse(localStorage.getItem("investmentHistory") || "[]");
+        //     history.push({
+        //         amount: parseFloat(amount),
+        //         txHash,
+        //         timestamp: new Date().toISOString()
+        //     });
+        //     localStorage.setItem("investmentHistory", JSON.stringify(history));
+        //     loadInvestmentHistory();
+        // }
+
+
+        function loadInvestmentHistory() {
+            const history = JSON.parse(localStorage.getItem("investmentHistory") || "[]");
+            const tbody = document.querySelector("#investmentTable tbody");
+            tbody.innerHTML = "";
+
+            let total = 0;
+
+            history.slice().reverse().forEach(entry => {
+                total += entry.amount;
+                const row = document.createElement("tr");
+                row.innerHTML = `
+            <td>${entry.amount} ETH</td>
+            <td>${new Date(entry.timestamp).toLocaleString()}</td>
+            <td><a href="https://etherscan.io/tx/${entry.txHash}" target="_blank" style="color:#f2a900;">${entry.txHash.slice(0, 10)}...</a></td>
+        `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById("totalInvested").innerText = total.toFixed(4);
+        }
+
+
+
+        function saveWithdrawalHistory(amount, txHash) {
+            const history = JSON.parse(localStorage.getItem("withdrawalHistory") || "[]");
+            history.push({
+                amount: parseFloat(amount),
+                txHash,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem("withdrawalHistory", JSON.stringify(history));
+            loadWithdrawalHistory();
+        }
+
+        function loadWithdrawalHistory() {
+            const history = JSON.parse(localStorage.getItem("withdrawalHistory") || "[]");
+            const tbody = document.querySelector("#withdrawalTable tbody");
+            tbody.innerHTML = "";
+
+            let total = 0;
+            history.slice().reverse().forEach(entry => {
+                total += entry.amount;
+                const row = document.createElement("tr");
+                row.innerHTML = `
+            <td>${entry.amount} ETH</td>
+            <td>${new Date(entry.timestamp).toLocaleString()}</td>
+            <td><a href="https://etherscan.io/tx/${entry.txHash}" target="_blank" style="color:#f2a900">${entry.txHash.slice(0, 10)}...</a></td>
+        `;
+                tbody.appendChild(row);
+            });
+
+
+            document.getElementById("totalWithdrawn").innerText = total.toFixed(4);
+        }
+
+        async function fetchETHPrice() {
+            try {
+                const res = await fetch(
+                    "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
+                );
+                const json = await res.json();
+                const price = json.ethereum.usd;
+                document.getElementById("ethPrice").innerText = `$ ${price.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+            } catch (err) {
+                console.error("Failed to fetch ETH price:", err);
+                document.getElementById("ethPrice").innerText = "Error fetching price";
+            }
+        }
+
+        fetchETHPrice();
+        setInterval(fetchETHPrice, 60 * 1000); // refresh every 60 seconds
+
+        initChart();
+        init();
+        loadInvestmentHistory();
+        loadWithdrawalHistory();
+
+        // Auto-refresh balance every 10 seconds
+        autoRefreshBalance();
+        setInterval(autoRefreshBalance, 10000);
+
+    </script>
+</body>
+
+</html>
