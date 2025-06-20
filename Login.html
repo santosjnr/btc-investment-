@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bitcoin Investment</title>
+    <title>Santos Invest - Secure Bitcoin Investment</title>
     <style>
         * {
             box-sizing: border-box;
@@ -18,7 +18,6 @@
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            /* background: #0f0f1a; */
             color: white;
         }
 
@@ -55,7 +54,6 @@
             color: #f2a900;
         }
 
-        /* Responsive Nav */
         .menu-toggle {
             display: none;
             flex-direction: column;
@@ -90,8 +88,6 @@
                 display: flex;
             }
         }
-
-
 
         .hero {
             height: 100vh;
@@ -144,7 +140,6 @@
             background-color: #d89500;
         }
 
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -211,17 +206,6 @@
             margin-top: 10px;
             cursor: pointer;
         }
-
-        /* @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.2em;
-            }
-
-            nav ul {
-                flex-direction: column;
-                gap: 10px;
-            }
-        } */
     </style>
 </head>
 
@@ -235,16 +219,13 @@
             <span></span>
         </div>
         <ul id="nav-links">
-            <li><a href="./index.html">Home</a></li>
-            <!-- <li><a href="./Login.html">Login</a></li> -->
-            <li><a href="./about.html">About</a></li>
-            <li><a href="test.html">Testimony</a></li>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Testimony</a></li>
         </ul>
-
     </nav>
 
-
-    <!-- Hero Section -->
+    <!-- ✅ HERO SECTION -->
     <section class="hero">
         <div class="overlay"></div>
         <div class="hero-content">
@@ -254,7 +235,7 @@
         </div>
     </section>
 
-    <!-- Modal Form -->
+    <!-- ✅ AUTH MODAL -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -267,75 +248,8 @@
         </div>
     </div>
 
-
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
+    <!-- ✅ LOCAL LOGIN / SIGNUP SCRIPT -->
     <script>
-        const contractAddress = "0x114be4F65A165293418d0C9a2D58fbd791CD5195"; // Replace with deployed address
-        const contractABI = [{ "inputs": [], "name": "checkBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "getContractBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "invest", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_passwordHash", "type": "string" }, { "internalType": "string", "name": "_userName", "type": "string" }], "name": "logging", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "logout", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_passwordHash", "type": "string" }, { "internalType": "string", "name": "_userName", "type": "string" }, { "internalType": "string", "name": "_email", "type": "string" }], "name": "signUp", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "", "type": "address" }], "name": "users", "outputs": [{ "internalType": "bool", "name": "isRegistered", "type": "bool" }, { "internalType": "string", "name": "passwordHash", "type": "string" }, { "internalType": "string", "name": "userName", "type": "string" }, { "internalType": "string", "name": "email", "type": "string" }, { "internalType": "uint256", "name": "balance", "type": "uint256" }, { "internalType": "bool", "name": "isLoggedIn", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "uint256", "name": "_amount", "type": "uint256" }], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" }]
-
-        let provider;
-        let signer;
-        let InvestmentPlatform;
-
-        async function connectWallet() {
-            if (window.ethereum) {
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                await provider.send("eth_requestAccounts", []);
-                signer = provider.getSigner();
-                contract = new ethers.Contract(contractAddress, contractABI, signer);
-            } else {
-                alert("Please install MetaMask to use this feature.");
-            }
-        }
-        document.getElementById("submitBtn").addEventListener("click", async () => {
-            const name = document.getElementById("username").value;
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-
-            if (formTitle.innerText === "Sign Up") {
-                await signUp(name, email, password);
-            } else {
-                await logIn(name, password);
-            }
-        });
-
-        async function signUp(name, email, password) {
-            await connectWallet();
-            try {
-                const tx = await contract.signUp(password, name, email);
-                await tx.wait();
-                alert("Sign Up Successful!");
-                closeModal();
-            } catch (err) {
-                console.error(err);
-                alert("Error: " + err.message);
-            }
-        }
-
-
-        async function logIn(name, password) {
-            await connectWallet();
-            try {
-                const tx = await contract.logging(password, name);
-                console.log("Logging", name, password);
-                await tx.wait();
-                alert("Logged In Successfully!");
-                window.location.href = "dashboard.html"; // Replace with actual dashboard page
-            } catch (err) {
-                console.error(err);
-                alert("Login Failed: " + err.message);
-            }
-        }
-
-    </script>
-
-
-
-    <script>
-        function toggleMenu() {
-            document.getElementById("nav-links").classList.toggle("show");
-        }
         const modal = document.getElementById("authModal");
         const formTitle = document.getElementById("formTitle");
         const submitBtn = document.getElementById("submitBtn");
@@ -343,6 +257,10 @@
         const emailField = document.getElementById("email");
 
         let isSignUp = true;
+
+        function toggleMenu() {
+            document.getElementById("nav-links").classList.toggle("show");
+        }
 
         function openModal() {
             modal.style.display = "flex";
@@ -362,14 +280,43 @@
                 : "Don't have an account? Sign Up";
         }
 
+        submitBtn.addEventListener("click", () => {
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            if (!username || !password || (isSignUp && !email)) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            if (isSignUp) {
+                if (localStorage.getItem(username)) {
+                    alert("Username already exists!");
+                    return;
+                }
+                const user = { username, email, password };
+                localStorage.setItem(username, JSON.stringify(user));
+                alert("Account created successfully!");
+                closeModal();
+            } else {
+                const storedUser = JSON.parse(localStorage.getItem(username));
+                if (storedUser && storedUser.password === password) {
+                    alert("Login successful!");
+                    closeModal();
+                    window.location.href = "dashboard.html";
+                } else {
+                    alert("Invalid credentials.");
+                }
+            }
+        });
+
         window.onclick = function (event) {
             if (event.target == modal) {
                 closeModal();
             }
         };
-
     </script>
-
 </body>
 
 </html>
