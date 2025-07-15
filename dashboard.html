@@ -4,64 +4,42 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Santos Invest</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Investment Dashboard</title>
     <style>
         body {
-            margin: 0;
+            background-color: #0d1117;
+            color: white;
             font-family: "Segoe UI", sans-serif;
-            background-color: #0f0f1a;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px;
-        }
-
-        h1 {
-            color: #f2a900;
-            margin-bottom: 20px;
+            margin: 0;
+            padding: 20px;
         }
 
         .info-box {
-            background: #1e1e2f;
+            background: #161b22;
+            border: 1px solid #30363d;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
-            width: 100%;
-            max-width: 500px;
-            text-align: left;
-        }
-
-        .info-box p {
-            margin: 10px 0;
         }
 
         .actions {
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            max-width: 500px;
-            width: 100%;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .actions input,
         .actions button {
             padding: 10px;
+            border-radius: 8px;
             border: none;
-            border-radius: 5px;
-            font-size: 1em;
-        }
-
-        .actions input {
-            flex: 1;
         }
 
         .actions button {
             background: #f2a900;
-            color: #0f0f1a;
+            color: #000;
             cursor: pointer;
-            transition: background 0.3s;
+            font-weight: bold;
         }
 
         .actions button:hover {
@@ -92,9 +70,18 @@
             }
         }
     </style>
+
+    <!-- WalletConnect + Web3Modal -->
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
+    <button id="connectBtn" class="logout-button" style="background-color: #4CAF50; margin-right: 6pc;">Connect
+        Wallet</button>
     <button id="logoutBtn" class="logout-button">Logout</button>
 
     <h1>Welcome to Your Dashboard</h1>
@@ -153,7 +140,6 @@
         </table>
     </div>
 
-
     <div class="info-box" id="adminBox" style="display:none">
         <p><strong>Total Contract Balance:</strong> <span id="contractBalance">Loading...</span> ETH</p>
     </div>
@@ -162,7 +148,6 @@
 
     <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
         const contractAddress = "0xaB4c09180363440C79eb44C7210F0aed4825c3Be";
         const contractABI = [
@@ -183,20 +168,51 @@
                 "inputs": [], "name": "getContractBalance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function"
             }
         ];
+        let providerEthers, signer, contract, userAddress, investmentChart;
+        let web3Modal, web3Instance, profitHistory = [];
 
-        let provider, signer, contract, userAddress, investmentChart;
-        let profitHistory = [];
+        async function setupWeb3Modal() {
+            const providerOptions = {
+                walletconnect: {
+                    package: window.WalletConnectProvider.default,
+                    options: {
+                        rpc: {
+                            1: "https://mainnet.infura.io/v3/2c3c989ca0d6424caeb862e81d1c4db8",
+                            11155111: "https://sepolia.infura.io/v3/2c3c989ca0d6424caeb862e81d1c4db8"
+                        }
+                    }
+                }
+            };
+
+            web3Modal = new window.Web3Modal.default({
+                cacheProvider: false,
+                providerOptions
+            });
+        }
+
+        async function connectWallet() {
+            try {
+                const provider = await web3Modal.connect();
+                web3Instance = new Web3(provider);
+
+                const accounts = await web3Instance.eth.getAccounts();
+                userAddress = accounts[0];
+                document.getElementById("userAddress").innerText = userAddress;
+
+                provider.on("accountsChanged", () => window.location.reload());
+
+                providerEthers = new ethers.providers.Web3Provider(provider);
+                signer = providerEthers.getSigner();
+                contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+                await init();
+            } catch (err) {
+                console.error("Connection failed:", err);
+                showToast("Connection failed");
+            }
+        }
 
         async function init() {
-            if (!window.ethereum) return alert("Please install MetaMask");
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
-            signer = provider.getSigner();
-            userAddress = await signer.getAddress();
-
-            document.getElementById("userAddress").innerText = userAddress;
-            contract = new ethers.Contract(contractAddress, contractABI, signer);
-
             const user = await contract.users(userAddress);
             document.getElementById("userName").innerText = user.userName;
 
@@ -223,7 +239,6 @@
                 showToast("Investment successful!", "#28a745");
                 await autoRefreshBalance();
             } catch (err) {
-                console.error(err);
                 showToast("Investment failed: " + err.message, "#c0392b");
             }
         }
@@ -238,7 +253,6 @@
                 showToast("Withdrawal successful!", "#28a745");
                 await autoRefreshBalance();
             } catch (err) {
-                console.error(err);
                 showToast("Withdrawal failed: " + err.message, "#c0392b");
             }
         }
@@ -251,23 +265,16 @@
                 updateChart(formatted);
                 trackProfit(formatted);
             } catch (err) {
-                console.error("Auto-refresh failed:", err);
+                console.error("Balance refresh failed:", err);
             }
         }
 
         function trackProfit(currentBalance) {
             const now = Date.now();
-            // Keep history for 10 minutes max
             profitHistory = profitHistory.filter(entry => now - entry.time <= 10 * 60 * 1000);
             profitHistory.push({ time: now, balance: currentBalance });
-
-            if (profitHistory.length > 1) {
-                const first = profitHistory[0].balance;
-                const profit = currentBalance - first;
-                document.getElementById("profitAmount").innerText = profit.toFixed(6);
-            } else {
-                document.getElementById("profitAmount").innerText = "0.000000";
-            }
+            const profit = currentBalance - (profitHistory[0]?.balance || 0);
+            document.getElementById("profitAmount").innerText = profit.toFixed(6);
         }
 
         function showToast(message, color = "#333") {
@@ -313,57 +320,34 @@
             investmentChart.update();
         }
 
-        document.getElementById("logoutBtn").addEventListener("click", function () {
-            if (confirm("Are you sure you want to logout?")) {
-                window.location.href = "index.html";
-            }
-        });
-
-
-        // Refresh every 10 sec
-
-        // function saveInvestmentHistory(amount, txHash) {
-        //     const history = JSON.parse(localStorage.getItem("investmentHistory") || "[]");
-        //     history.push({
-        //         amount: parseFloat(amount),
-        //         txHash,
-        //         timestamp: new Date().toISOString()
-        //     });
-        //     localStorage.setItem("investmentHistory", JSON.stringify(history));
-        //     loadInvestmentHistory();
-        // }
-
+        function saveInvestmentHistory(amount, txHash) {
+            const history = JSON.parse(localStorage.getItem("investmentHistory") || "[]");
+            history.push({ amount: parseFloat(amount), txHash, timestamp: new Date().toISOString() });
+            localStorage.setItem("investmentHistory", JSON.stringify(history));
+            loadInvestmentHistory();
+        }
 
         function loadInvestmentHistory() {
             const history = JSON.parse(localStorage.getItem("investmentHistory") || "[]");
             const tbody = document.querySelector("#investmentTable tbody");
             tbody.innerHTML = "";
-
             let total = 0;
-
             history.slice().reverse().forEach(entry => {
                 total += entry.amount;
                 const row = document.createElement("tr");
                 row.innerHTML = `
-            <td>${entry.amount} ETH</td>
-            <td>${new Date(entry.timestamp).toLocaleString()}</td>
-            <td><a href="https://etherscan.io/tx/${entry.txHash}" target="_blank" style="color:#f2a900;">${entry.txHash.slice(0, 10)}...</a></td>
-        `;
+                    <td>${entry.amount} ETH</td>
+                    <td>${new Date(entry.timestamp).toLocaleString()}</td>
+                    <td><a href="https://etherscan.io/tx/${entry.txHash}" target="_blank" style="color:#f2a900;">${entry.txHash.slice(0, 10)}...</a></td>
+                `;
                 tbody.appendChild(row);
             });
-
             document.getElementById("totalInvested").innerText = total.toFixed(4);
         }
 
-
-
         function saveWithdrawalHistory(amount, txHash) {
             const history = JSON.parse(localStorage.getItem("withdrawalHistory") || "[]");
-            history.push({
-                amount: parseFloat(amount),
-                txHash,
-                timestamp: new Date().toISOString()
-            });
+            history.push({ amount: parseFloat(amount), txHash, timestamp: new Date().toISOString() });
             localStorage.setItem("withdrawalHistory", JSON.stringify(history));
             loadWithdrawalHistory();
         }
@@ -372,28 +356,23 @@
             const history = JSON.parse(localStorage.getItem("withdrawalHistory") || "[]");
             const tbody = document.querySelector("#withdrawalTable tbody");
             tbody.innerHTML = "";
-
             let total = 0;
             history.slice().reverse().forEach(entry => {
                 total += entry.amount;
                 const row = document.createElement("tr");
                 row.innerHTML = `
-            <td>${entry.amount} ETH</td>
-            <td>${new Date(entry.timestamp).toLocaleString()}</td>
-            <td><a href="https://etherscan.io/tx/${entry.txHash}" target="_blank" style="color:#f2a900">${entry.txHash.slice(0, 10)}...</a></td>
-        `;
+                    <td>${entry.amount} ETH</td>
+                    <td>${new Date(entry.timestamp).toLocaleString()}</td>
+                    <td><a href="https://etherscan.io/tx/${entry.txHash}" target="_blank" style="color:#f2a900;">${entry.txHash.slice(0, 10)}...</a></td>
+                `;
                 tbody.appendChild(row);
             });
-
-
             document.getElementById("totalWithdrawn").innerText = total.toFixed(4);
         }
 
         async function fetchETHPrice() {
             try {
-                const res = await fetch(
-                    "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"
-                );
+                const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd");
                 const json = await res.json();
                 const price = json.ethereum.usd;
                 document.getElementById("ethPrice").innerText = `$ ${price.toLocaleString(undefined, {
@@ -401,23 +380,27 @@
                     maximumFractionDigits: 2
                 })}`;
             } catch (err) {
-                console.error("Failed to fetch ETH price:", err);
                 document.getElementById("ethPrice").innerText = "Error fetching price";
             }
         }
 
-        fetchETHPrice();
-        setInterval(fetchETHPrice, 60 * 1000); // refresh every 60 seconds
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = "index.html";
+            }
+        });
 
-        initChart();
-        init();
-        loadInvestmentHistory();
-        loadWithdrawalHistory();
+        document.getElementById("connectBtn").addEventListener("click", connectWallet);
 
-        // Auto-refresh balance every 10 seconds
-        autoRefreshBalance();
-        setInterval(autoRefreshBalance, 10000);
-
+        window.addEventListener("load", () => {
+            setupWeb3Modal();
+            initChart();
+            fetchETHPrice();
+            setInterval(fetchETHPrice, 60000);
+            loadInvestmentHistory();
+            loadWithdrawalHistory();
+            setInterval(autoRefreshBalance, 10000);
+        });
     </script>
 </body>
 
