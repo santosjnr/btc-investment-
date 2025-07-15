@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Investment Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santos Invest Dashboard</title>
     <style>
         body {
             background-color: #0d1117;
@@ -47,9 +47,9 @@
         }
 
         .logout-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+            position: relative;
+            margin: 10px;
+            display: inline-block;
             padding: 10px 20px;
             background-color: #f44336;
             color: white;
@@ -80,9 +80,10 @@
 </head>
 
 <body>
-    <button id="connectBtn" class="logout-button" style="background-color: #4CAF50; margin-right: 6pc;">Connect
-        Wallet</button>
-    <button id="logoutBtn" class="logout-button">Logout</button>
+    <div style="text-align: center;">
+        <button id="connectBtn" class="logout-button" style="background-color: #4CAF50;">Connect Wallet</button>
+        <button id="logoutBtn" class="logout-button">Logout</button>
+    </div>
 
     <h1>Welcome to Your Dashboard</h1>
 
@@ -190,6 +191,12 @@
             });
         }
 
+        if (/Mobile/.test(navigator.userAgent) && !window.ethereum) {
+            const deepLink = `https://metamask.app.link/dapp/${location.hostname}`;
+            // window.location.href = deepLink; // Uncomment to force MetaMask mobile redirect
+        }
+    </script>
+    <script>
         async function connectWallet() {
             try {
                 const provider = await web3Modal.connect();
