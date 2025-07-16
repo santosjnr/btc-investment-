@@ -358,6 +358,23 @@
         </div>
     </section>
 
+
+    <div id="testimonyPopup" style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background-color: #161b22;
+        color: #fff;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border: 1px solid #30363d;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        max-width: 300px;
+        display: none;
+        z-index: 999;
+    "></div>
+
+
     <!-- Modal Pop-up -->
     <div id="modal" class="modal">
         <div class="modal-content">
@@ -376,6 +393,30 @@
         function toggleMenu() {
             document.getElementById("nav-links").classList.toggle("show");
         }
+
+        const testimonials = [
+            { name: "Adebayo Johnson", country: "Nigeria", currency: "NGN", amount: 500000, message: "Santos Invest changed my life!" },
+            { name: "Emily Carter", country: "USA", currency: "USD", amount: 1200, message: "Very smooth platform, great support." },
+            { name: "Ravi Kumar", country: "India", currency: "INR", amount: 98000, message: "Earned consistent returns monthly!" },
+            { name: "John Smith", country: "UK", currency: "GBP", amount: 750, message: "Reliable and transparent!" },
+            { name: "Chen Li", country: "China", currency: "CNY", amount: 8800, message: "Profitable and easy to use." },
+            { name: "Fatou Ndiaye", country: "Senegal", currency: "XOF", amount: 350000, message: "Quick withdrawals and excellent ROI." },
+            { name: "Carlos Mendoza", country: "Mexico", currency: "MXN", amount: 24000, message: "This platform works!" },
+            { name: "Anna Müller", country: "Germany", currency: "EUR", amount: 620, message: "Trustworthy and legit." },
+            { name: "Ahmed Hassan", country: "Egypt", currency: "EGP", amount: 9000, message: "Best investment I've made!" },
+            { name: "George Mensah", country: "Ghana", currency: "GHS", amount: 5600, message: "I keep reinvesting." },
+            { name: "Lucie Dubois", country: "France", currency: "EUR", amount: 740, message: "Great returns and no stress!" },
+            { name: "Thabo Nkosi", country: "South Africa", currency: "ZAR", amount: 13000, message: "It really pays!" },
+            { name: "Akiko Tanaka", country: "Japan", currency: "JPY", amount: 110000, message: "Very rewarding experience." },
+            { name: "William Brown", country: "Canada", currency: "CAD", amount: 950, message: "I recommend Santos Invest." },
+            { name: "Olga Petrova", country: "Russia", currency: "RUB", amount: 72000, message: "One of the best decisions I made." },
+            { name: "Pedro Costa", country: "Brazil", currency: "BRL", amount: 3700, message: "Love how simple it is." },
+            { name: "Amir Al-Farsi", country: "UAE", currency: "AED", amount: 4200, message: "Exceptional growth!" },
+            { name: "Sophia Rossi", country: "Italy", currency: "EUR", amount: 560, message: "Fast returns and support." },
+            { name: "Samuel Kim", country: "South Korea", currency: "KRW", amount: 840000, message: "Steady and reliable." },
+            { name: "Grace Mburu", country: "Kenya", currency: "KES", amount: 90000, message: "100% satisfied!" }
+        ];
+
 
         const testimonies = [
             { name: "Sarah N.", text: "BTC Invest helped me grow my wealth and taught me how to manage my portfolio better." },
@@ -406,6 +447,30 @@
                 closeModal();
             }
         }
+
+        let currentTestimony = 0;
+
+        function showTestimony() {
+            const popup = document.getElementById("testimonyPopup");
+            const t = testimonials[currentTestimony];
+            popup.innerHTML = `
+        <strong>${t.name}</strong> from <strong>${t.country}</strong><br>
+        Invested <strong>${t.amount.toLocaleString()} ${t.currency}</strong><br>
+        <em>"${t.message}"</em>
+    `;
+            popup.style.display = "block";
+            popup.style.opacity = 1;
+
+            setTimeout(() => {
+                popup.style.opacity = 0;
+                popup.style.display = "none";
+            }, 6000); // Show each for 6 seconds
+
+            currentTestimony = (currentTestimony + 1) % testimonials.length;
+        }
+
+        setInterval(showTestimony, 8000); // Show new one every 8 seconds
+
     </script>
 
 </body>
